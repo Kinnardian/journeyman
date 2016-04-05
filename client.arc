@@ -30,7 +30,8 @@
                     (build-query url!query querylist)
                     (upcase method)
                     cookies
-                    headers)
+                    headers
+                    files)
           receive-response)))
 
 (mac defreq (name url (o querylist) (o method "GET") (o cookies))
@@ -81,7 +82,7 @@
                        (pair:map [coerce _ 'string] querylist)))
              "&")))
 
-(def build-header (host path query method cookies headers)
+(def build-header (host path query method cookies headers (o files))
   (reduce +
     (intersperse (str-rn)
                  (flat:list
@@ -125,11 +126,11 @@
 
 ;;File Upload
 (def build-multipart-body (parts)
-  (mapappend (string "----partboundary----\nContent-Disposition: @_!filename\nContent-Type: text/plain\n" _) parts)
+  (mappend (string "----partboundary----\nContent-Disposition: @_!filename\nContent-Type: text/plain\n" _) parts)
 
 )
 
-(def buildreq (host path query method cookies headers files)
+(def buildreq (host path query method cookies headers (o files))
   (+ (build-header host path query method cookies headers files)
      (str-rn 2)
      (if (is content-type* "Content-Type: multipart/form-data; boundary= ----partboundary----")
