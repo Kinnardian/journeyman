@@ -134,7 +134,7 @@
      (str-rn 2)
      (if (is content-type* "Content-Type: multipart/form-data; boundary= ----partboundary----")
        (build-multipart-body files)
-       (build-body query method)))
+       (build-body query method))))
 
 (def str-rn ((o n 1))
   (if (<= n 1)
