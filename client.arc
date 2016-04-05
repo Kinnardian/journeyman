@@ -11,7 +11,7 @@
 ;             - Only compatible with GET requests.
 
 (= protocol* "HTTP/1.0"
-   useragent* "Web.arc/1.0"
+   useragent* "journeyman.arc/0.0.1"
    content-type* "Content-Type: application/x-www-form-urlencoded")
 
 (mac w/io (io request func)
@@ -157,7 +157,8 @@
 ; Note: these ignore the response header: (car (mkreq url))
 (def get-url (url)
   (cdr (mkreq url)))
-
+  
+; (post-url "url" (list 'arg1 arg1 'arg2 arg2 'arg3 arg3))
 (def post-url (url args)
   (cdr (mkreq url args "POST")))
 
