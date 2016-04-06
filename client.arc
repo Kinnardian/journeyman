@@ -126,7 +126,7 @@
 
 ;;File Upload
 (def build-multipart-body (parts)
-  (mappend (string "----partboundary----\nContent-Disposition: @_!filename\nContent-Type: text/plain\n" _) parts)
+  (mappend [string "----partboundary----\nContent-Disposition: @_!filename\nContent-Type: text/plain\n" _!body] parts)
 
 )
 
@@ -170,8 +170,7 @@
 ; Convenience functions.
 (def upload-file (url (o args) files)
   (= content-type* "Content-Type: multipart/form-data; boundary= ----partboundary----")
- (cdr (mkreq url args "POST" nil nil files)) 
-)
+  (cdr (mkreq url args "POST" nil nil files)))
 ; Note: these ignore the response header: (car (mkreq url))
 (def get-url (url)
   (cdr (mkreq url)))
