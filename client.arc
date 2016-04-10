@@ -25,13 +25,13 @@
 (def mkreq (url (o querylist) (o method "GET") (o cookies) (o headers) (o files))
   (let url (parse-url url)
     (w/io (get-io   url!resource url!host url!port)
-          (buildreq url!host
+          (pr (buildreq url!host
                     url!path
                     (build-query url!query querylist)
                     (upcase method)
                     cookies
                     headers
-                    files)
+                    files))
           receive-response)))
 
 (mac defreq (name url (o querylist) (o method "GET") (o cookies))
@@ -126,8 +126,7 @@
 
 ;;File Upload
 (def build-multipart-body (parts)
-  (mappend [string "----partboundary----\nContent-Disposition: @_!filename\nContent-Type: text/plain\n" _!body] parts)
-
+  (map [string "----partboundary----\nContent-Disposition: @_!filename\nContent-Type: text/plain\n" _!filebody] parts)
 )
 
 (def buildreq (host path query method cookies headers (o files))
