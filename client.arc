@@ -25,13 +25,13 @@
 (def mkreq (url (o querylist) (o method "GET") (o cookies) (o headers) (o files))
   (let url (parse-url url)
     (w/io (get-io   url!resource url!host url!port)
-          (pr (buildreq url!host
+          (buildreq url!host
                     url!path
                     (build-query url!query querylist)
                     (upcase method)
                     cookies
                     headers
-                    files))
+                    files)
           receive-response)))
 
 (mac defreq (name url (o querylist) (o method "GET") (o cookies))
@@ -88,7 +88,7 @@
                  (flat:list
                    (first-req-line method path query)
                    (request-header host)
-                   (entity-header  method query)
+                   (entity-header  method query files)
                    (cookie-header  cookies)
                    headers))))
 
@@ -104,9 +104,9 @@
   (list (+ "Host: " host)
         (+ "User-Agent: " useragent*)))
 
-(def entity-header (method query)
+(def entity-header (method query (o files))
   (if (is method "POST")
-    (list (+ "Content-Length: " (len (utf-8-bytes query))) content-type*)))
+    (list (+ "Content-Length: " (len (+ (utf-8-bytes query) (utf-8-bytes (build-multipart-body files)))))  content-type*)))
 
 (def cookie-header (cookies)
   (if cookies (encode-cookies cookies)))
@@ -126,13 +126,13 @@
 
 ;;File Upload
 (def build-multipart-body (parts)
-  (map [string "----partboundary----\nContent-Disposition: @_!filename\nContent-Type: text/plain\n" _!filebody] parts)
+  (string (map [string "----partboundary----\nContent-Disposition: filename='@_!filename'\nContent-Type: text/plain\n" _!filebody] parts))
 )
 
 (def buildreq (host path query method cookies headers (o files))
   (+ (build-header host path query method cookies headers files)
      (str-rn 2)
-     (if (is content-type* "Content-Type: multipart/form-data; boundary= ----partboundary----")
+     (if (is content-type* "Content-Type: multipart/form-data; boundary=----partboundary----")
        (build-multipart-body files)
        (build-body query method))))
 
@@ -168,8 +168,9 @@
 
 ; Convenience functions.
 (def upload-file (url (o args) files)
-  (= content-type* "Content-Type: multipart/form-data; boundary= ----partboundary----")
+  (= content-type* "Content-Type: multipart/form-data; boundary=----partboundary----")
   (cdr (mkreq url args "POST" nil nil files)))
+  
 ; Note: these ignore the response header: (car (mkreq url))
 (def get-url (url)
   (cdr (mkreq url)))
